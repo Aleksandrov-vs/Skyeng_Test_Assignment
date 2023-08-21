@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    .details {
+        display: none;
+    }
+    .details-open {
+    display: block;
+}
+</style>
+<h2>обновить файл</h2>
+<form  method="post" enctype="multipart/form-data" action="{% url 'patch_script' checking_scripts_list.0.script.pk %}">
+    {% csrf_token %}
+    {{ patch_script_form.as_p }}
+</form>
+<form  method="post"action="{% url 'delete_script' checking_scripts_list.0.script.pk %}">
+    {% csrf_token %}
+    <button type="submit">Удалить</button>
+</form>
+
+<h1>Список объектов</h1>
+<table>
+<thead>
+    <tr>
+        <th>Статус проверки</th>
+        <th>Вреья проверки</th>
+        <th>Статус отправки уведомления на почту</th>
+    </tr>
+</thead>
+<tbody>
+    {% for script_check in checking_scripts_list %}
+        <tr class="expandable">
+            <td>{{ script_check.script_check_status }}</td>
+            <td>{{ script_check.created }}</td>
+            <td>{{ script_check.is_email_send }}</td>
+            <td><button class="view-details-button">посмотреть отчеты</button></td>
+        </tr>
+        <tr class="details">
+            <td colspan="2">
+                Подроблый отчет
+            </td>
+        </tr>
+    {% endfor %}
+</tbody>
+</table>
+<script>
+    const viewDetailsButtons = document.querySelectorAll('.view-details-button');
+    viewDetailsButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const detailsRow = button.parentElement.parentElement.nextElementSibling;
+            detailsRow.classList.toggle('details-open');
+        });
+    });
+</script>
+{% endblock %}

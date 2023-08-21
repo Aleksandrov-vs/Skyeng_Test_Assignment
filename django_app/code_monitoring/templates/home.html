@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Загрузить новый файл</h2>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ upload_script_form.as_p }}
+    <button type="submit">Загрузить</button>
+</form>
+
+<h1>Список ваших файлов</h1>
+<table>
+<thead>
+    <tr>
+        <th>Имя файла</th>
+        <th>Дата обновления</th>
+    </tr>
+</thead>
+<tbody>
+    {% for script in upload_script_list %}
+        <tr>
+            <td>{{ script.script_name }}</td>
+            <td>{{ script.modified }}</td>
+            <td>
+                <a href="{% url 'script_check_detail' script.pk %}" class="btn btn-primary">Подробнее</a>
+            </td>
+        </tr>
+    {% endfor %}
+</tbody>
+</table>
+
+{% endblock %}
