@@ -5,7 +5,10 @@ from config.settings import BASE_DIR
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'users/templates'), ],
+        'DIRS': [
+            os.path.join(BASE_DIR, 'users/templates'),
+            os.path.join(BASE_DIR, 'code_monitoring/templates'),
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

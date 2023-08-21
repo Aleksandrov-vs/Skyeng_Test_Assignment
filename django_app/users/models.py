@@ -13,6 +13,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(_('email'), unique=True)
     date_joined = models.DateTimeField(_('registered'), auto_now_add=True)
     is_active = models.BooleanField(_('is_active'), default=True)
+    is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
 
     objects = UserManager()
 

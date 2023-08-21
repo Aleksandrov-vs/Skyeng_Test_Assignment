@@ -25,10 +25,12 @@ class SingUpView(View):
                 form.add_error('email',
                                'Пользователь с таким email уже существует.')
             else:
+                print(email, password)
                 user = User(email=email)
                 user.set_password(password)
-                user.is_active = False
+                user.is_active = True
                 user.save()
                 return redirect('login')
 
         return render(request, self.template_name, {'form': form})
+
