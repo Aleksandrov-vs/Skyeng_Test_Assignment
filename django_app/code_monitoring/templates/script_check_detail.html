@@ -9,7 +9,7 @@
 }
 </style>
 <h2>обновить файл</h2>
-<form  method="post" enctype="multipart/form-data" action="{% url 'patch_script' checking_scripts_list.0.script.pk %}">
+<form  method="post" enctype="multipart/form-data" action="{% url 'script_check_detail' checking_scripts_list.0.script.pk %}">
     {% csrf_token %}
     {{ patch_script_form.as_p }}
 </form>
@@ -33,11 +33,25 @@
             <td>{{ script_check.script_check_status }}</td>
             <td>{{ script_check.created }}</td>
             <td>{{ script_check.is_email_send }}</td>
-            <td><button class="view-details-button">посмотреть отчеты</button></td>
+            <td>
+                {% if script_check.script_check_status == 'checked' %}
+                    <button class="view-details-button">посмотреть отчеты</button>
+                {% endif %}
+            </td>
         </tr>
         <tr class="details">
             <td colspan="2">
-                Подроблый отчет
+                {% for report in script_check.check_report.all %}
+                    <div>
+                        <H4>Название линтера:{{report.linter_name}}</H4>
+                        <br>
+                        <br>
+                        <H4>отчет</H4>
+                        <br>
+                        {{report.report_text}}
+                    </div>
+                    <br>
+                {% endfor %}
             </td>
         </tr>
     {% endfor %}

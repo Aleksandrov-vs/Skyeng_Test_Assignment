@@ -1,5 +1,5 @@
 from django import forms
-from .models import Script, ScriptCheck
+from .models import Script, ScriptCheck, ScriptCheckStatus
 
 
 class UploadScriptForm(forms.ModelForm):

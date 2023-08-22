@@ -31,3 +31,23 @@ services:
         condition: service_healthy
     ports:
       - "8000:8000"
+
+  celery:
+    build: ./django_app
+    command: celery worker --app=core --loglevel=info
+    volumes:
+      - ./django_app:/usr/src/app
+    environment:
+      - DEBUG=1
+      - SECRET_KEY=${SECRET_KEY}
+      - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+#    depends_on:
+#      - web
+#      - redis
+
+  redis:
+    image: redis:5-alpine
+    ports:
+      - "6379:6379"

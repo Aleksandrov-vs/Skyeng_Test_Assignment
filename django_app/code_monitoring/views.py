@@ -10,33 +10,7 @@ from .decorators.access_decorators import user_has_script_access, \
     user_has_script_check_access
 from .models import Script, ScriptCheck, ScriptStatus, ScriptCheckStatus
 from .forms import UploadScriptForm, PatchScriptForm
-
-
-@method_decorator([login_required(), user_has_script_access], name='dispatch')
-class PatchScriptView(View):
-    success_url = 'script_check_detail'
-    template_name = 'script_check_detail.html'
-
-    def post(self, request, *args, **kwargs):
-        script_id = self.kwargs['script_id']
-        form = PatchScriptForm(request.POST, request.FILES)
-        if form.is_valid():
-            script = Script.objects.get(id=script_id)
-            new_file = request.FILES.get('file_path')
-            if new_file:
-                script.file_path = new_file
-
-            script.script_state = ScriptStatus.UPDATE
-            script.save()
-
-            script_check = ScriptCheck(script=script)
-            script_check.save()
-
-            return HttpResponseRedirect(
-                reverse(self.success_url, args=[script_id])
-            )
-        else:
-            return render(request, self.template_name, {'form': form})
+from .tasks import create_and_send_report
 
 
 @method_decorator([login_required(), user_has_script_access], name='dispatch')
@@ -83,6 +57,9 @@ class ScriptView(ListView):
             script = form.save()
             script_check = ScriptCheck(script=script)
             script_check.save()
+
+            create_and_send_report.apply_async(args=[script_check.id])
+
             return HttpResponseRedirect(reverse(self.success_url))
         else:
             return render(request, self.template_name, {'form': form})
@@ -93,6 +70,7 @@ class ScriptCheckView(ListView):
     template_name = 'script_check_detail.html'
     model = ScriptCheck
     context_object_name = 'checking_scripts_list'
+    success_url = 'script_check_detail'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -103,6 +81,47 @@ class ScriptCheckView(ListView):
         script_id = self.kwargs['script_id']
         script_checks_with_reports = ScriptCheck.objects.filter(
             script_id=script_id
-        ).prefetch_related('checking_scripts')
+        ).prefetch_related('check_report')
         return script_checks_with_reports
+
+    def post(self, request, *args, **kwargs):
+        script_id = self.kwargs['script_id']
+        form = PatchScriptForm(request.POST, request.FILES)
+
+        script = Script.objects.get(id=script_id)
+        script_checks = ScriptCheck.objects.filter(script=script)
+
+        if script_checks.filter(
+                script_check_status=ScriptCheckStatus.PENDING).exists():
+            form.add_error(None, "Дождитесь окончания предыдущей проверки")
+
+        if form.is_valid():
+            new_file = request.FILES.get('file_path')
+            if new_file:
+                script.file_path = new_file
+
+            script.script_state = ScriptStatus.UPDATE
+            script.save()
+
+            script_check = ScriptCheck(script=script)
+            script_check.save()
+
+            create_and_send_report.apply_async(args=[script_check.id])
+
+            return HttpResponseRedirect(
+                reverse(self.success_url, args=[script_id])
+            )
+        else:
+            script_checks_with_reports = ScriptCheck.objects.filter(
+                script_id=script_id
+            ).prefetch_related('check_report')
+            return render(
+                request,
+                self.template_name,
+                context={
+                    'patch_script_form': form,
+                    self.context_object_name: script_checks_with_reports
+                }
+            )
+
 

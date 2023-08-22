@@ -53,6 +53,7 @@ class Script(UUIDMixin, TimeStampedMixin):
 class ScriptCheckStatus(models.TextChoices):
     PENDING = 'pending', _('Pending')
     CHECKED = 'checked', _('Checked')
+    ERR = 'err', _('Error')
 
 
 class ScriptCheck(UUIDMixin, TimeStampedMixin):
@@ -71,15 +72,13 @@ class ScriptCheck(UUIDMixin, TimeStampedMixin):
 
 
 class CheckReport(UUIDMixin, TimeStampedMixin):
-    checking_script = models.ForeignKey(
+    script_check = models.ForeignKey(
         ScriptCheck,
         on_delete=models.CASCADE,
-        related_name='checking_scripts'
+        related_name='check_report'
     )
     linter_name = models.TextField(_('title'), null=False)
-    file_path = models.FileField(
-        _('file_path'),
-        upload_to='check_reports/',
-        null=False,
-        validators=[FileExtensionValidator(allowed_extensions=['html', ])]
+    report_text = models.TextField(
+        _('report_text'),
+        null=False
     )
