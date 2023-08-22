@@ -1,31 +1,54 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Загрузить новый файл</h2>
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ upload_script_form.as_p }}
-    <button type="submit">Загрузить</button>
-</form>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h2 class="text-center mb-4">Загрузка скрипта на проверку</h2>
+            <form method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    {% csrf_token %}
+                    <label for="file" class="form-label">Выберите скрипт:</label>
+                    <input
+                            type="file"
+                            class="form-control {% if upload_script_form.file_path.errors %}is-invalid{% endif %}"
+                            id="id_file_path"
+                            name="{{upload_script_form.file_path.name }}"
+                    >
+                    {% if upload_script_form.file_path.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in upload_script_form.file_path.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <button type="submit" class="btn btn-primary">Загрузить</button>
+            </form>
+        </div>
+    </div>
+</div>
 
-<h1>Список ваших файлов</h1>
-<table>
-<thead>
-    <tr>
-        <th>Имя файла</th>
-        <th>Дата обновления</th>
-    </tr>
-</thead>
-<tbody>
-    {% for script in upload_script_list %}
-        <tr>
-            <td>{{ script.script_name }}</td>
-            <td>{{ script.modified }}</td>
-            <td>
-                <a href="{% url 'script_check_detail' script.pk %}" class="btn btn-primary">Подробнее</a>
-            </td>
-        </tr>
-    {% endfor %}
-</tbody>
-</table>
+<div class="container mt-5">
+    <h2 class="mb-4">Список ваших скриптов</h2>
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Имя файла</th>
+                <th>Дата обновления</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for script in upload_script_list %}
+                <tr>
+                    <td>{{ script.script_name }}</td>
+                    <td>{{ script.modified }}</td>
+                    <td>
+                        <a href="{% url 'script_check_detail' script.pk %}" class="btn btn-primary">Подробнее</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 
 {% endblock %}

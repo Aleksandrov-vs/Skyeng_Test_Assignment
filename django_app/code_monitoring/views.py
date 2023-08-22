@@ -62,7 +62,10 @@ class ScriptView(ListView):
 
             return HttpResponseRedirect(reverse(self.success_url))
         else:
-            return render(request, self.template_name, {'form': form})
+            return render(request, self.template_name, {
+                'upload_script_form': form,
+                self.context_object_name: self.get_queryset()
+            })
 
 
 @method_decorator([login_required(), user_has_script_check_access], name='dispatch')
@@ -112,15 +115,12 @@ class ScriptCheckView(ListView):
                 reverse(self.success_url, args=[script_id])
             )
         else:
-            script_checks_with_reports = ScriptCheck.objects.filter(
-                script_id=script_id
-            ).prefetch_related('check_report')
             return render(
                 request,
                 self.template_name,
                 context={
                     'patch_script_form': form,
-                    self.context_object_name: script_checks_with_reports
+                    self.context_object_name:  self.get_queryset()
                 }
             )
 
