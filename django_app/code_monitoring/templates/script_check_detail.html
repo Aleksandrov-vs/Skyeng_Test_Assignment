@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block content %}
+    {% if patch_script_form.non_field_errors %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+             {{ patch_script_form.non_field_errors }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endif %}
+<div class="container mt-3">
+    <h2 class="mb-4">Обновить скрипт</h2>
+    <form method="post" enctype="multipart/form-data" class="row g-3 align-items-center">
+        <div class="col-auto">
+            {% csrf_token %}
+            <input
+                type="file"
+                class="form-control {% if patch_script_form.file_path.errors %}is-invalid{% endif %}"
+                id="id_file_path"
+                name="{{patch_script_form.file_path.name }}"
+            >
+            {% if patch_script_form.file_path.errors %}
+                <div class="invalid-feedback">
+                    {% for error in patch_script_form.file_path.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Загрузить новую версию</button>
+        </div>
+    </form>
+</div>
+
+<div class="container mt-3">
+    <form
+        method="post"
+        action="{% url 'delete_script' checking_scripts_list.0.script.pk %}"
+        onsubmit="return confirm('Вы уверены, что хотите удалить все отчеты?')"
+    >
+        {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Удалить</button>
+    </form>
+</div>
+
+<style>
+    .fixed-height-card {
+        overflow: auto;
+    }
+</style>
+
+<div class="container mt-5">
+     <h2 class="mb-4">Проверки</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Статус проверки</th>
+                <th>Время проверки</th>
+                <th>Статус отправки уведомления на почту</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for script_check in checking_scripts_list %}
+                <tr data-bs-toggle="collapse" data-bs-target="#details{{forloop.counter}}" aria-expanded="false">
+                    <td>{{ script_check.script_check_status }}</td>
+                    <td>{{ script_check.created }}</td>
+                    <td>{{ script_check.is_email_send }}</td>
+                    <td>
+                        {% if script_check.script_check_status == 'checked' %}
+                            <button class="btn btn-primary">посмотреть отчеты</button>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="4" class="p-0 col-1">
+                        <div id="details{{forloop.counter}}" class="collapse">
+                            {% if script_check.check_report.all %}
+                                {% for report in script_check.check_report.all %}
+                                    <div class="card mt-3 fixed-height-card col-md-6 mx-auto">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Название линтера: {{report.linter_name}}</h5>
+                                            <p class="card-text">Отчет:</p>
+                                            <p><pre>{{report.report_text}}</pre></p>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <p><pre>отчетов пока нет(</pre></p>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}
