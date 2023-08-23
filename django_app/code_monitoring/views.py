@@ -40,7 +40,7 @@ class ScriptView(ListView):
             user=current_user
         ).exclude(
             script_state=ScriptStatus.DELETE
-        )
+        ).order_by('-modified')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -81,7 +81,7 @@ class ScriptCheckView(ListView):
         script_id = self.kwargs['script_id']
         script_checks_with_reports = ScriptCheck.objects.filter(
             script_id=script_id
-        ).prefetch_related('check_report')
+        ).prefetch_related('check_report').order_by('-modified')
         return script_checks_with_reports
 
     def post(self, request, *args, **kwargs):
