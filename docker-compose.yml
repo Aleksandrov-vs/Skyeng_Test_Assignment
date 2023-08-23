@@ -19,8 +19,9 @@ services:
       retries: 5
     volumes:
       - ./postgresql/data:/var/lib/postgresql/data
-    ports:
-      - ${POSTGRES_PORT}:5432
+    expose:
+      - ${POSTGRES_PORT}
+
   django_app:
       build:
         context: django_app
@@ -53,6 +54,7 @@ services:
     depends_on:
       - django_app
       - redis
+      - postgres
 
   celery-beat:
     build: ./django_app
@@ -64,14 +66,15 @@ services:
     depends_on:
       - django_app
       - redis
+      - postgres
 
   redis:
     image: redis
     container_name: 'redis'
     volumes:
       - ./redis/data:/data
-    ports:
-      - ${REDIS_PORT}:${REDIS_PORT}
+    expose:
+      - ${REDIS_PORT}
 
     healthcheck:
       test: [ "CMD", "redis-cli", "ping"]
