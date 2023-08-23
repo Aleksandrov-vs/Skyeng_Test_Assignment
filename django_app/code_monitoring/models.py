@@ -1,3 +1,4 @@
+import os
 import uuid
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -26,6 +27,11 @@ class ScriptStatus(models.TextChoices):
     UPDATE = 'updated', _('Updated')
 
 
+def generate_random_folder(instance, filename):
+    random_folder_name = str(uuid.uuid4())
+    return os.path.join('scripts/', random_folder_name, filename)
+
+
 class Script(UUIDMixin, TimeStampedMixin):
     user = models.ForeignKey(
         User,
@@ -41,7 +47,7 @@ class Script(UUIDMixin, TimeStampedMixin):
     )
     file_path = models.FileField(
         _('file_path'),
-        upload_to='scripts/',
+        upload_to=generate_random_folder,
         null=False,
         validators=[FileExtensionValidator(allowed_extensions=['py', ])]
     )

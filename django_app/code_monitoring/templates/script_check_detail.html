@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 {% block content %}
-
+    {% if patch_script_form.non_field_errors %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+             {{ patch_script_form.non_field_errors }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endif %}
 <div class="container mt-3">
     <h2 class="mb-4">Обновить скрипт</h2>
     <form method="post" enctype="multipart/form-data" class="row g-3 align-items-center">

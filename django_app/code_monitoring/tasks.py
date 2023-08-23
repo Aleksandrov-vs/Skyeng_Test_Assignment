@@ -6,16 +6,19 @@ from .reports.linters import MyPyLinter, Flake8Linter
 from users.tasks import send_email_with_report
 
 from celery import shared_task
+from celery.utils.log import get_task_logger
 
+
+logger = get_task_logger(__name__)
 
 @shared_task
-def create_and_send_report(script_check_id):
-    time.sleep(5)
-    try:
-        script_check = ScriptCheck.objects.get(id=script_check_id)
-    except ScriptCheck.DoesNotExist:
-        return f" ScriptCheck with id {script_check_id} not found."
-    else:
+def create_and_send_report():
+    script_checks = ScriptCheck.objects.filter(
+        script_check_status=ScriptCheckStatus.PENDING
+    )
+    if len(script_checks) == 0:
+        return 'Нет новых отчетов для проверки'
+    for script_check in script_checks:
         try:
             report_service = ReportService(
                 linters_list=[MyPyLinter(), Flake8Linter()]
@@ -39,6 +42,5 @@ def create_and_send_report(script_check_id):
         else:
             script_check.script_check_status = ScriptCheckStatus.CHECKED
             script_check.save()
-            send_email_with_report.apply_async(args=[script_check_id])
+            send_email_with_report.apply_async(args=[script_check.id])
             return f"Отчеты успешно сохранены"
-

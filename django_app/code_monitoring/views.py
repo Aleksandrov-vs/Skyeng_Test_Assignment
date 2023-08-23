@@ -10,7 +10,6 @@ from .decorators.access_decorators import user_has_script_access, \
     user_has_script_check_access
 from .models import Script, ScriptCheck, ScriptStatus, ScriptCheckStatus
 from .forms import UploadScriptForm, PatchScriptForm
-from .tasks import create_and_send_report
 
 
 @method_decorator([login_required(), user_has_script_access], name='dispatch')
@@ -57,8 +56,6 @@ class ScriptView(ListView):
             script = form.save()
             script_check = ScriptCheck(script=script)
             script_check.save()
-
-            create_and_send_report.apply_async(args=[script_check.id])
 
             return HttpResponseRedirect(reverse(self.success_url))
         else:
@@ -108,8 +105,6 @@ class ScriptCheckView(ListView):
 
             script_check = ScriptCheck(script=script)
             script_check.save()
-
-            create_and_send_report.apply_async(args=[script_check.id])
 
             return HttpResponseRedirect(
                 reverse(self.success_url, args=[script_id])

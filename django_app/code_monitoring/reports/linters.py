@@ -1,6 +1,7 @@
 import subprocess
 
 from pydantic import BaseModel
+import re
 
 
 class LinterResponse(BaseModel):
@@ -13,12 +14,17 @@ class Flake8Linter:
 
     def create_report(self, file_path: str) -> LinterResponse:
         result = subprocess.run(
-            ['flake8', '--filename={basename}', file_path],
+            ['flake8', f'{file_path}'],
             capture_output=True,
             text=True
         )
         output = result.stdout
-        return LinterResponse(linter_name=self.linter_name, report_text=output)
+        report = ''
+        pattern = r'^(.*?)(?=\/[A-Za-z0-9_]+\.py)'  # отсекает весь путь до файла
+        for line in output.split('\n'):
+            report += re.sub(pattern, ' ', line)
+            report += '\n'
+        return LinterResponse(linter_name=self.linter_name, report_text=report)
 
 
 class MyPyLinter:
@@ -26,9 +32,14 @@ class MyPyLinter:
 
     def create_report(self, file_path: str) -> LinterResponse:
         result = subprocess.run(
-            ['mypy', '--no-cache', file_path, '--ignore-missing-imports'],
+            ['mypy', file_path, '--ignore-missing-imports'],
             capture_output=True,
             text=True
         )
         output = result.stdout
-        return LinterResponse(linter_name=self.linter_name, report_text=output)
+        report = ''
+        pattern = r'^(.*?)(?=\/[A-Za-z0-9_]+\.py)' # отсекает весь путь до файла
+        for line in output.split('\n'):
+            report += re.sub(pattern, ' ', line)
+            report += '\n'
+        return LinterResponse(linter_name=self.linter_name, report_text=report)
